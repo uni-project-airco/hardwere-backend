@@ -11,10 +11,7 @@ class DHT22:
         self._dht = adafruit_dht.DHT22(pin, use_pulseio=False)
 
     def read_telemetry(self) -> Dict[str, float]:
-        context = {
-            "temperature": self._dht.temperature,
-            "humidity": self._dht.humidity
-        }
+        context = {"temperature": self._dht.temperature, "humidity": self._dht.humidity}
 
         for i in range(5):  # try five times before error
             try:

@@ -5,7 +5,12 @@ from typing import Dict
 import requests
 
 from config import *
-from utils import read_telemetry_data, send_alerts, send_telemetry_update, listen_pubnub_messages
+from utils import (
+    read_telemetry_data,
+    send_alerts,
+    send_telemetry_update,
+    listen_pubnub_messages,
+)
 
 
 def pubnub_channel_boot(cfg: Dict) -> None:
@@ -16,8 +21,10 @@ def pubnub_channel_boot(cfg: Dict) -> None:
             json={
                 "sensor-id": cfg["sensor-id"],
             },
-            headers={"certificate-string": cfg['certificate-string'], "sensor-id": cfg['sensor-id']}
-
+            headers={
+                "certificate-string": cfg["certificate-string"],
+                "sensor-id": cfg["sensor-id"],
+            },
         )
         if not response.ok:
             raise RuntimeError("Device certification failed")
@@ -52,12 +59,19 @@ async def run(cfg: JSON_DATA):
                 for key, value in shared_state.items():
                     calculations[key] += value
                 sleep(2 * 60)
-            response = requests.post(url=f'{cfg["server-url"]}/telemetry/save_telemetry', json={
-                "temperature": round(calculations['temperature'] / 5),
-                "humidity": round(calculations['humidity'] / 5),
-                "co2": round(calculations['co2'] / 5),
-                "pm25": round(calculations['pm25'] / 5),
-            }, headers={"certificate-string": cfg['certificate-string'], "sensor-id": cfg['sensor-id']})
+            response = requests.post(
+                url=f'{cfg["server-url"]}/telemetry/save_telemetry',
+                json={
+                    "temperature": round(calculations["temperature"] / 5),
+                    "humidity": round(calculations["humidity"] / 5),
+                    "co2": round(calculations["co2"] / 5),
+                    "pm25": round(calculations["pm25"] / 5),
+                },
+                headers={
+                    "certificate-string": cfg["certificate-string"],
+                    "sensor-id": cfg["sensor-id"],
+                },
+            )
 
             logger.info(f"Telemetry sent - {response.status_code}")
     except Exception as e:
@@ -75,6 +89,6 @@ if __name__ == "__main__":
     cfg = boot(cfg)
     save_config(CONFIG_PATH, cfg)
     cfg = load_config(CONFIG_PATH)
-    CURRENT_THRESHOLDS = cfg['thresholds']
+    CURRENT_THRESHOLDS = cfg["thresholds"]
 
     asyncio.run(run(cfg))

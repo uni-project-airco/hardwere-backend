@@ -13,10 +13,12 @@ dependencies = [
     "lgpio>=0.2.2.0",
     "notebook>=7.4.7",
     "pubnub>=10.4.1",
+    "requests>=2.32.5",
     "rpi-lgpio>=0.6",
 ]
 
 [dependency-groups]
 dev = [
     "black>=25.11.0",
+    "mypy>=2.1.0",
 ]

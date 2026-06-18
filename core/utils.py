@@ -11,12 +11,7 @@ from config import *
 
 
 def calculate_air_quality_index(data: Dict, thresholds: Dict):
-    weights = {
-        "co2": 0.40,
-        "pm25": 0.30,
-        "humidity": 0.15,
-        "temperature": 0.15
-    }
+    weights = {"co2": 0.40, "pm25": 0.30, "humidity": 0.15, "temperature": 0.15}
 
     aqi = 0
     max_aqi = 100
@@ -59,24 +54,31 @@ async def send_alerts(cfg: Dict) -> None:
 
     while True:
         for key, value in shared_state.items():
-            if (value > CURRENT_THRESHOLDS[key]['danger']) and (previous_alerts[key] != "danger"):
-                previous_alerts[key] = 'danger'
-                PUBNUB_CLIENT.send_alert(title=f"{key} alert",
-                                         message=f"{key} in a dangerous level: {value}",
-                                         status='high',
-                                         value=value
-                                         )
+            if (value > CURRENT_THRESHOLDS[key]["danger"]) and (
+                previous_alerts[key] != "danger"
+            ):
+                previous_alerts[key] = "danger"
+                PUBNUB_CLIENT.send_alert(
+                    title=f"{key} alert",
+                    message=f"{key} in a dangerous level: {value}",
+                    status="high",
+                    value=value,
+                )
                 buzzer.play_alert(5)
-            elif (value > CURRENT_THRESHOLDS[key]['warning']) and (
-                    previous_alerts[key] not in ['warning', 'danger']):
-                previous_alerts[key] = 'warning'
-                PUBNUB_CLIENT.send_alert(title=f"{key} alert",
-                                         message=f"{key} in a warning level: {value}",
-                                         status='warning',
-                                         value=value
-                                         )
-            elif value < CURRENT_THRESHOLDS[key]['warning'] and (previous_alerts[key] != "normal"):
-                previous_alerts[key] = 'normal'
+            elif (value > CURRENT_THRESHOLDS[key]["warning"]) and (
+                previous_alerts[key] not in ["warning", "danger"]
+            ):
+                previous_alerts[key] = "warning"
+                PUBNUB_CLIENT.send_alert(
+                    title=f"{key} alert",
+                    message=f"{key} in a warning level: {value}",
+                    status="warning",
+                    value=value,
+                )
+            elif value < CURRENT_THRESHOLDS[key]["warning"] and (
+                previous_alerts[key] != "normal"
+            ):
+                previous_alerts[key] = "normal"
 
         try:
             await asyncio.sleep(0.5)
@@ -106,13 +108,16 @@ async def read_telemetry_data() -> None:
 
 async def send_telemetry_update(cfg: Dict) -> None:
     while True:
-        shared_state["aqi"] = calculate_air_quality_index(shared_state, CURRENT_THRESHOLDS)
+        shared_state["aqi"] = calculate_air_quality_index(
+            shared_state, CURRENT_THRESHOLDS
+        )
         PUBNUB_CLIENT.send_telemetry(**shared_state)
 
         try:
             await asyncio.sleep(10)
         except asyncio.CancelledError:
             break
+
 
 def handle_pubnub_message(message: Dict) -> None:
     request_type = message.get("request_type", None)
@@ -122,7 +127,7 @@ def handle_pubnub_message(message: Dict) -> None:
         if thresholds:
             logger.info(f"Received threshold update: {thresholds}")
             cfg = load_config(CONFIG_PATH)
-            cfg['thresholds'] = thresholds
+            cfg["thresholds"] = thresholds
             save_config(CONFIG_PATH, cfg)
             CURRENT_THRESHOLDS.update(thresholds)
             logger.info(f"Updated thresholds in config: {thresholds}")
